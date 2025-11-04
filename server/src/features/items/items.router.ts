@@ -44,7 +44,7 @@ itemsRouter.get("/:id", validate(idNumberRequestSchema), async(req, res) =>
     item.imageUrl = buildImageUrl(req, item.id);
     if(req.headers["accept"] == "application/xml")
     {
-      res.status(200).send(create().ele("item", item).end);
+      res.status(200).send(create().ele("item", item).end());
     }
     else
     {
@@ -62,7 +62,8 @@ itemsRouter.get("/:id", validate(idNumberRequestSchema), async(req, res) =>
     else
     {
       res.status(404).json({message: "Item not found"});
-    } 
+    }
+    res.status(404).json({message: "Item not found"});
   }
 });
 

@@ -1,8 +1,11 @@
 import express from "express";
-import { getItemDetail, getItems, upsertItem } from "./items.service";
+import { deleteItem, getItemDetail, getItems, upsertItem } from "./items.service";
 import { idNumberRequestSchema, itemPOSTRequestSchema, itemPUTRequestSchema } from "../types";
 import { validate } from "../../middleware/validation.middleware";
 import { create } from "domain";
+import { checkRequiredScope, validateAccessToken } from "../../middleware/auth0.middleware";
+import { ItemsPremissions, SecurityPremissions } from "../../config/premissions";
+
 
 
 export const itemsRouter = express.Router();
@@ -29,6 +32,7 @@ itemsRouter.get("/", async(req, res) =>
   }
 
 });
+
 
 itemsRouter.get("/:id", validate(idNumberRequestSchema), async(req, res) =>
 {
@@ -62,6 +66,7 @@ itemsRouter.get("/:id", validate(idNumberRequestSchema), async(req, res) =>
   }
 });
 
+
 itemsRouter.get("/:id", async(req, res)=>{
   const id = parseInt(req.params.id);
   const item = await getItemDetail(id);
@@ -89,7 +94,7 @@ itemsRouter.get("/", validate(itemPOSTRequestSchema), async(req, res) =>
   }
 });
 
-itemsRouter.put("/:id", validate(itemPUTRequestSchema), async(req, res) =>
+itemsRouter.put("/:id", validate(itemPUTRequestSchema), checkRequiredScope(ItemsPremissions.Write), async(req, res) =>
 {
   const data = itemPUTRequestSchema.parse(req);
   const item = await upsertItem(data.body, data.params.id);
@@ -103,6 +108,35 @@ itemsRouter.put("/:id", validate(itemPUTRequestSchema), async(req, res) =>
     res.status(404).json({message: "Item not found"});
   }
 });
+
+itemsRouter.post("/", validateAccessToken, checkRequiredScope(ItemsPremissions.Create), validate(itemPOSTRequestSchema), async(req, res) =>
+{
+  const data = itemPOSTRequestSchema.parse(req);
+  const item = await upsertItem(data.body);
+  if(item != null)
+  {
+    res.status(201).json(item);
+  }
+  else
+  {
+    res.status(500).json({ message: "Creation failed" });
+  }
+});
+
+itemsRouter.delete("/:id", validateAccessToken, checkRequiredScope(SecurityPremissions.Deny), validate(idNumberRequestSchema), async(req, res) =>
+{
+  const data = idNumberRequestSchema.parse(req);
+  const item = await deleteItem(data.params.id);
+  if(item != null)
+  {
+    res.json(item);
+  }
+  else
+  {
+    res.status(404).json({ message: "Item not found" });
+  }
+});
+
 
 
 

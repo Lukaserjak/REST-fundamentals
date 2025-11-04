@@ -1,10 +1,9 @@
 import express from "express";
-import { getCustomerDetail, getCustomers, searchCustomers, upsertCustomer } from "./customers.service";
-import { customerPOSTRequestSchema, idItemIdUUIDRequestSchema, idUUIDRequestSchema } from "../types";
-import { getOrders, getOrdersForCustomer } from "../orders/orders.service";
-import { Validator } from "express-oauth2-jwt-bearer";
+import { getCustomerDetail, searchCustomers, upsertCustomer } from "./customers.service";
+import { customerPOSTRequestSchema,  } from "../types";
+import { getOrdersForCustomer } from "../orders/orders.service";
 import { validate } from "../../middleware/validation.middleware";
-import { create } from "domain";
+import { create } from "xmlbuilder2";
 
 export const customersRouter = express.Router();
 
@@ -44,7 +43,7 @@ customersRouter.post("/", validate(customerPOSTRequestSchema), async(req, res) =
     const customer = await upsertCustomer(data.body);
     if(customer != null)
     {
-        if (req.header["accept"] == "application/xml")
+        if (req.headers["accept"] === "application/xml")
         {
             res.status(201).send(create().ele("customer", customer).end());
         }

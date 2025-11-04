@@ -2,7 +2,7 @@ import express from "express";
 import { deleteItem, getItemDetail, getItems, upsertItem } from "./items.service";
 import { idNumberRequestSchema, itemPOSTRequestSchema, itemPUTRequestSchema } from "../types";
 import { validate } from "../../middleware/validation.middleware";
-import { create } from "domain";
+import { create } from "xmlbuilder2";
 import { checkRequiredScope, validateAccessToken } from "../../middleware/auth0.middleware";
 import { ItemsPremissions, SecurityPremissions } from "../../config/premissions";
 
